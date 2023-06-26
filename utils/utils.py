@@ -16,17 +16,17 @@ def get_locality(wp_soup):
 
 def get_url(url):
     page = r.get(url)
-    soup = BeautifulSoup(page.text, "html.parser")
+    soup = BeautifulSoup(page.content, "html.parser")
     return soup
 
 def find_price(immo_soup):
     in_span = []
     span_lookup = immo_soup.find_all("span")
-    
+
     for things in span_lookup:
         line_lookup = things.get_text()
         in_span.append(line_lookup)
-    
+
     prices = []
     for string in in_span:
         cleaned_string = string.replace("\n", "")
@@ -35,12 +35,12 @@ def find_price(immo_soup):
             prices.append(match.group(0).replace(',', ''))
         else:
             pass
-    
+
     price = 0
-    
-    for num in prices: 
+
+    for num in prices:
         if len(num) >= 7:
-            price += int(num) 
+            price += int(num)
 
     return price
 
