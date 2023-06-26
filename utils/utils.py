@@ -38,7 +38,7 @@ def get_n_bedrooms(wp_soup):
 
 def get_url(url):
     page = r.get(url)
-    soup = BeautifulSoup(page.text, "html.parser")
+    soup = BeautifulSoup(page.content, "html.parser")
     return soup
 
 def find_price(immo_soup):
