@@ -20,15 +20,19 @@ def get_url(url):
 
 def get_type_of_property(soup):
     type_of_bulding = soup.find("h1" , attrs={"class":"classified__title"}).get_text()
-    type_of_building = soup.find("h1", attrs={"class": "classified__title"}).get_text()
     types_of_houses=["house", "villa", "huis"]
     for word in types_of_houses :
         if word in type_of_building.lower():
             answer = "House"
             break
-    types_of_appartments=["appartments", "apps"]
+    types_of_appartments=["appartments","duplex" ,"apps"]
     for word in types_of_appartments :
         if word in type_of_building.lower():
             answer= "Apartment"
             break
     return answer
+
+def get_Subtype_of_property(soup):
+    subtype = soup.find("tbody", atrrs={"class":"classified-table__body"}).get_text()
+    return subtype
+# ["bungalow","duplex", "Chalet", "mansion",""]
