@@ -60,7 +60,14 @@ def get_type_of_property(soup):
     return answer
 
 def get_Subtype_of_property(soup):
-    subtype = soup.find("tbody", atrrs={"class":"classified-table__body"}).get_text()
+    subtype = soup.find("td", atrrs={"class":"classified-table__data"}).get_text()
     return subtype
-# ["bungalow","duplex", "Chalet", "mansion",""]
-
+types=["bungalow","duplex", "Chalet", "mansion"]
+for word in subtype :
+    if word in types:
+        answer= word
+        break
+  
+def Furnished(soup):
+    subtype = soup.find("td", atrrs={"class":"classified-table__data"}).get_text()
+    return subtype
