@@ -18,3 +18,17 @@ def get_url(url):
     soup = BeautifulSoup(page.text, "html.parser")
     return soup
 
+def get_type_of_property(soup):
+    type_of_bulding = soup.find("h1" , attrs={"class":"classified__title"}).get_text()
+    type_of_building = soup.find("h1", attrs={"class": "classified__title"}).get_text()
+    types_of_houses=["house", "villa", "huis"]
+    for word in types_of_houses :
+        if word in type_of_building.lower():
+            answer = "House"
+            break
+    types_of_appartments=["appartments", "apps"]
+    for word in types_of_appartments :
+        if word in type_of_building.lower():
+            answer= "Apartment"
+            break
+    return answer
