@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import requests as r
 
 def get_locality(wp_soup):
     """This function receives a 'soup' from a specific webpage
@@ -11,3 +12,9 @@ def get_locality(wp_soup):
 
     result_of_my_code = "Antwerp"
     return {"Location" : result_of_my_code}
+
+def get_url(url):
+    page = r.get(url)
+    soup = BeautifulSoup(page.text, "html.parser")
+    return soup
+
