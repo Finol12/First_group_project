@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
 import requests as r
 import re
-import lxml
-import cchardet
+#import lxml
+#import cchardet
 
 def get_locality(wp_soup):
     """This function receives a 'soup' from a specific webpage
@@ -31,7 +31,8 @@ def get_n_bedrooms(wp_soup):
 
 def get_url(url):
     page = r.get(url)
-    soup = BeautifulSoup(page.content, "lxml")
+#    soup = BeautifulSoup(page.content, "lxml")
+    soup = BeautifulSoup(page.content, "html.parser")
     return soup
 
 def find_price(immo_soup):
