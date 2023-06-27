@@ -1,20 +1,20 @@
 from bs4 import BeautifulSoup
 import requests as r
 import re
+import json
 #import lxml
 #import cchardet
 
 def get_locality(wp_soup):
-    """This function receives a 'soup' from a specific webpage
-    containing an ad for a property and process it in order to
-    find the location of such property"""
+    data = get_data_layer(wp_soup)
+    return data["classified"]["zip"]
 
-    #my code goes here and after it found the relevant information
-    #it returns a dictionary containing the type of data I'm returning
-    #and the value
-
-    result_of_my_code = "Antwerp"
-    return {"Location" : result_of_my_code}
+def get_data_layer(wp_soup):
+    tags = wp_soup.find_all("script")
+    for tag in tags:
+        if "window.dataLayer = " in tag.text:
+            script = json.loads(tag.text.split("window.dataLayer = ")[1][:-2])
+    return script[0]
 
 def get_living_area(wp_soup):
     result = 0
