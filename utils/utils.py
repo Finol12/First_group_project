@@ -37,17 +37,17 @@ def get_swimming_pool(wp_soup):
         if x =="true":
             answer = "Yes"
         else:
-            answer = "No" 
+            answer = "No"
     except:
         answer = "No"
-    return answer       
+    return answer
 
 def get_garden_area(wp_soup):
     data = get_data_layer(wp_soup)
     try:
         x = data["classified"]["outdoor"]["garden"]["surface"]
     except:
-        x = 0 
+        x = 0
     return x
 
 def get_terrace(wp_soup):
@@ -96,7 +96,7 @@ def url_dictionary(url):
     soup = get_soup(url)
     url_dic = {}
     url_dic["URL"] = url
-    url_dic["Type"] = get_type_of_property(soup) 
+    url_dic["Type"] = get_type_of_property(soup)
     url_dic["Subtype"] = get_subtype_of_propert(soup)
     url_dic["Price"] = get_price(soup)
     url_dic["Bedroom"] = get_num_of_bedrooms(soup)
@@ -107,3 +107,16 @@ def url_dictionary(url):
     url_dic["Surface_of_land"] = get_surface_of_land(soup)
     url_dic["Terrace"] = get_terrace(soup)
     return url_dic
+
+def get_urls_per_page(page_number):
+    url = ("https://www.immoweb.be/en/search/house/for-sale?countries=BE&page="
+           + page_number + "&orderBy=postal_code")
+    print(url)
+    soup = get_soup(url)
+    links = soup.find_all("a", attrs={'class' : 'card__title-link'})
+    #link = soup.find("article[id]")
+    for link in links[1:]:
+        #print(link["href"])
+        info = url_dictionary(link["href"])
+        print(info)
+
