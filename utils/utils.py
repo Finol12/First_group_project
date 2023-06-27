@@ -6,8 +6,13 @@ import json
 #import cchardet
 
 def get_locality(wp_soup):
+    """Function receives a soup object from a immoweb listing and return the zip code of the listing"""
     data = get_data_layer(wp_soup)
-    return data["classified"]["zip"]
+    try:
+        result = data["classified"]["zip"]
+    except:
+        result = 0
+    return result
 
 def get_subtype_of_propert(wp_soup):
     data = get_data_layer(wp_soup)
@@ -24,6 +29,34 @@ def get_price(wp_soup):
 def get_num_of_bedrooms(wp_soup):
     data = get_data_layer(wp_soup)
     return data["classified"]["bedroom"]["count"]
+
+def get_swimming_pool(wp_soup):
+    data = get_data_layer(wp_soup)
+    try:
+        x = data["classified"]["wellnessEquipment"]["hasSwimmingPool"]
+        if x =="true":
+            answer = "Yes"
+        else:
+            answer = "No" 
+    except:
+        answer = "No"
+    return answer       
+
+def get_garden_area(wp_soup):
+    data = get_data_layer(wp_soup)
+    try:
+        x = data["classified"]["outdoor"]["garden"]["surface"]
+    except:
+        x = 0 
+    return x
+
+def get_surface_of_land(wp_soup):
+    data = get_data_layer(wp_soup)
+    try:
+        x = data["classified"]["land"]["surface"]
+    except:
+        x = 0
+    return x
 
 def get_data_layer(wp_soup):
     tags = wp_soup.find_all("script")
@@ -43,8 +76,23 @@ def get_living_area(wp_soup):
     data = get_classified_data_layer(wp_soup)
     return data["property"]["netHabitableSurface"]
 
-def get_url(url):
+def get_soup(url):
     page = r.get(url)
 #    soup = BeautifulSoup(page.content, "lxml")
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
+
+def url_dictionary(url):
+    soup = get_soup(url)
+    url_dic = {}
+    url_dic["URL"] = url
+    url_dic["Type"] = get_type_of_property(soup) 
+    url_dic["Subtype"] = get_subtype_of_propert(soup)
+    url_dic["Price"] = get_price(soup)
+    url_dic["Bedroom"] = get_num_of_bedrooms(soup)
+    url_dic["Living_area"] =get_living_area(soup)
+    url_dic["Locality"] = get_locality(soup)
+    url_dic["Swimming_pool"] = get_swimming_pool(soup)
+    url_dic["Garden_area"] = get_garden_area(soup)
+    url_dic["Surface_of_land"] = get_surface_of_land(soup)
+    return url_dic
