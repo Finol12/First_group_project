@@ -77,14 +77,17 @@ def get_living_area(wp_soup):
     data = get_classified_data_layer(wp_soup)
     return data["property"]["netHabitableSurface"]
 
-def get_soup(url):
-    page = r.get(url)
+def get_soup(url, session=None):
+    if session:
+        page = session.get(url)
+    else:
+        page = r.get(url)
 #    soup = BeautifulSoup(page.content, "lxml")
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
 
-def url_dictionary(url):
-    soup = get_soup(url)
+def url_dictionary(url, session):
+    soup = get_soup(url, session)
     url_dic = {}
     url_dic["URL"] = url
     url_dic["Type"] = get_type_of_property(soup)
@@ -98,15 +101,21 @@ def url_dictionary(url):
     url_dic["Surface_of_land"] = get_surface_of_land(soup)
     return url_dic
 
-def get_data_per_page(page_number):
+def get_data_per_page(page_number, session=None):
     """Receives a 'page_number', then returns a dictionary containing
     data from each immoweb real estate advertisement on that page"""
     url = ("https://www.immoweb.be/en/search/house/for-sale?countries=BE&page="
            + str(page_number) + "&orderBy=postal_code")
-    soup = get_soup(url)
+    must_close = False
+    if not session:
+        must_close = True
+        session = r.Session()
+    soup = get_soup(url, session)
     results = []
     links = soup.find_all("a", attrs={'class' : 'card__title-link'})
     for link in links[1:]:
         if "immoweb" in link["href"]:
-            results.append(url_dictionary(link["href"]))
+            results.append(url_dictionary(link["href"], session))
+    if must_close:
+        session.close()
     return results
