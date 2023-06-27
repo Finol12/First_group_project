@@ -50,6 +50,16 @@ def get_garden_area(wp_soup):
         x = 0 
     return x
 
+def get_terrace(wp_soup):
+    data = get_data_layer(wp_soup)
+    try:
+        terrace= data["classified"]["outdoor"]["terrace"]["exists"]
+        x ="Yes"
+
+    except:
+        x = "No" 
+    return x
+
 def get_surface_of_land(wp_soup):
     data = get_data_layer(wp_soup)
     try:
@@ -95,4 +105,5 @@ def url_dictionary(url):
     url_dic["Swimming_pool"] = get_swimming_pool(soup)
     url_dic["Garden_area"] = get_garden_area(soup)
     url_dic["Surface_of_land"] = get_surface_of_land(soup)
+    url_dic["Terrace"] = get_terrace(soup)
     return url_dic
