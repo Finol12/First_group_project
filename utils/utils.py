@@ -53,7 +53,6 @@ def find_price(immo_soup):
     for num in prices:
         if len(num) >= 7:
             price += int(num)
-
     return price
 
 def get_type_of_property(soup):
