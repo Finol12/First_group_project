@@ -6,7 +6,8 @@ import json
 #import cchardet
 
 def get_locality(wp_soup):
-    """Function receives a soup object from a immoweb listing and return the zip code of the listing"""
+    """Function receives a soup object from a immoweb listing and
+    return the zip code of the listing"""
     data = get_data_layer(wp_soup)
     try:
         result = data["classified"]["zip"]
@@ -62,14 +63,14 @@ def get_data_layer(wp_soup):
     tags = wp_soup.find_all("script")
     for tag in tags:
         if "window.dataLayer = " in tag.text:
-            script = json.loads(tag.text.split("window.dataLayer = ")[1][:-2])
+            script=json.loads(tag.text.split("window.dataLayer = ")[1][:-2])
     return script[0]
 
 def get_classified_data_layer(wp_soup):
     tags = wp_soup.find_all("script")
     for tag in tags:
         if "window.classified = " in tag.text:
-            script = json.loads(re.search(r"\{.*\}(?:;)", tag.text).group(0)[:-1])
+            script=json.loads(re.search(r"\{.*\}(?:;)", tag.text).group(0)[:-1])
     return script
 
 def get_living_area(wp_soup):
@@ -97,14 +98,15 @@ def url_dictionary(url):
     url_dic["Surface_of_land"] = get_surface_of_land(soup)
     return url_dic
 
-def get_urls_per_page(page_number):
+def get_data_per_page(page_number):
+    """Receives a 'page_number', then returns a dictionary containing
+    data from each immoweb real estate advertisement on that page"""
     url = ("https://www.immoweb.be/en/search/house/for-sale?countries=BE&page="
-           + page_number + "&orderBy=postal_code")
-    print(url)
+           + str(page_number) + "&orderBy=postal_code")
     soup = get_soup(url)
+    results = []
     links = soup.find_all("a", attrs={'class' : 'card__title-link'})
-    #link = soup.find("article[id]")
-    for link in links[1:]:
-        #print(link["href"])
-        info = url_dictionary(link["href"])
-        print(info)
+    for link in links[1:]
+        if "immoweb" in link["href"]:
+            results.append(url_dictionary(link["href"]))
+    return results
