@@ -48,3 +48,15 @@ def get_url(url):
 #    soup = BeautifulSoup(page.content, "lxml")
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
+
+def url_dictionary(url):
+    soup = get_url(url)
+    url_dic = {}
+    url_dic["URL"] = url
+    url_dic["Type"] = get_type_of_property(soup) 
+    url_dic["Subtype"] = get_subtype_of_propert(soup)
+    url_dic["Price"] = get_price(soup)
+    url_dic["Bedroom"] = get_num_of_bedrooms(soup)
+    url_dic["Living_area"] =get_living_area(soup)
+    url_dic["Locality"] = get_locality(soup)
+    return url_dic
