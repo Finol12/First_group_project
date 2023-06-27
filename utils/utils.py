@@ -41,7 +41,6 @@ def find_price(immo_soup):
     for things in span_lookup:
         line_lookup = things.get_text()
         in_span.append(line_lookup)
-
     prices = []
     for string in in_span:
         cleaned_string = string.replace("\n", "")
@@ -50,13 +49,10 @@ def find_price(immo_soup):
             prices.append(match.group(0).replace(',', ''))
         else:
             pass
-
     price = 0
-
     for num in prices:
         if len(num) >= 7:
             price += int(num)
-
     return price
 
 def get_type_of_property(soup):
