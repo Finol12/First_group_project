@@ -80,25 +80,16 @@ def get_living_area(wp_soup):
     return data["property"]["netHabitableSurface"]
 
 async def get_soup(url, session=None):
-#async
     if session:
         page = await session.get(url)
     else:
         page = await r.get(url)
-#end async
-    #if session:
-    #    page = await session.get(url)
-    #else:
-    #    page = await r.get(url)
 #    soup = BeautifulSoup(page.content, "lxml")
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
 
 async def url_dictionary(url, session):
-#async
     soup = await get_soup(url, session)
-#end async
-    #soup = get_soup(url, session)
     url_dic = {}
     url_dic["URL"] = url
     url_dic["Type"] = get_type_of_property(soup)
@@ -120,27 +111,16 @@ async def get_data_per_page(page_number, session=None):
     must_close = False
     if not session:
         must_close = True
-#async
         session = AsyncClient()
-#end async
-        #session = r.Session()
     soup = await get_soup(url, session)
     results = []
     tasks = []
     links = soup.find_all("a", attrs={'class' : 'card__title-link'})
     for link in links:
         if "immoweb" in link["href"]:
-#async
             tasks.append(
                 asyncio.create_task(url_dictionary(link["href"], session)))
-#End async
-            #results.append(url_dictionary(link["href"], session))
-#async
     results = await asyncio.gather(*tasks)
-#End async
     if must_close:
-#async
         await session.aclose()
-#end async
-        #session.close()
     return results
