@@ -19,7 +19,11 @@ def get_locality(wp_soup):
 
 def get_subtype_of_propert(wp_soup):
     data = get_data_layer(wp_soup)
-    return data["classified"]["subtype"]
+    try:
+        x=data["classified"]["subtype"]
+    except:
+        x="None"
+    return x
 
 def get_type_of_property(wp_soup):
     data = get_data_layer(wp_soup)
