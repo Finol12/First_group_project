@@ -27,15 +27,27 @@ def get_subtype_of_propert(wp_soup):
 
 def get_type_of_property(wp_soup):
     data = get_data_layer(wp_soup)
-    return data["classified"]["type"]
+    try:
+        x=data["classified"]["type"]
+    except:
+        x="None"
+    return x
 
 def get_price(wp_soup):
     data = get_data_layer(wp_soup)
-    return data["classified"]["price"]
+    try:
+        x=data["classified"]["price"]
+    except:
+        x="None"
+    return x
 
 def get_num_of_bedrooms(wp_soup):
     data = get_data_layer(wp_soup)
-    return data["classified"]["bedroom"]["count"]
+    try:
+        x=data["classified"]["bedroom"]["count"]
+    except:
+        x="None"
+    return x
 
 def get_swimming_pool(wp_soup):
     data = get_data_layer(wp_soup)
