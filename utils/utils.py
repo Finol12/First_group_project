@@ -41,6 +41,14 @@ def get_price(wp_soup):
         x=None
     return x
 
+def get_kitchen(wp_soup):
+    data = get_data_layer(wp_soup)
+    try:
+        x= data["classified"]["kitchen"]["type"]
+    except:
+        x = None 
+    return x
+
 def get_num_of_bedrooms(wp_soup):
     data = get_data_layer(wp_soup)
     try:
@@ -132,6 +140,7 @@ async def url_dictionary(url, session):
     url_dic["Garden_area"] = get_garden_area(soup)
     url_dic["Surface_of_land"] = get_surface_of_land(soup)
     url_dic["Terrace"] = get_terrace(soup)
+    url_dic["Kitchen"] = get_kitchen(soup)
     return url_dic
 
 async def get_data_per_page(page_number, session=None):
