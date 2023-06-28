@@ -20,30 +20,54 @@ def get_locality(wp_soup):
 
 def get_subtype_of_propert(wp_soup):
     data = get_data_layer(wp_soup)
-    return data["classified"]["subtype"]
+    try:
+        x=data["classified"]["subtype"]
+    except:
+        x=None
+    return x
 
 def get_type_of_property(wp_soup):
     data = get_data_layer(wp_soup)
-    return data["classified"]["type"]
+    try:
+        x=data["classified"]["type"]
+    except:
+        x=None
+    return x
 
 def get_price(wp_soup):
     data = get_data_layer(wp_soup)
-    return data["classified"]["price"]
+    try:
+        x=data["classified"]["price"]
+    except:
+        x=None
+    return x
+
+def get_kitchen(wp_soup):
+    data = get_data_layer(wp_soup)
+    try:
+        x= data["classified"]["kitchen"]["type"]
+    except:
+        x = None 
+    return x
 
 def get_num_of_bedrooms(wp_soup):
     data = get_data_layer(wp_soup)
-    return data["classified"]["bedroom"]["count"]
+    try:
+        x=data["classified"]["bedroom"]["count"]
+    except:
+        x=None
+    return x
 
 def get_swimming_pool(wp_soup):
     data = get_data_layer(wp_soup)
     try:
         x = data["classified"]["wellnessEquipment"]["hasSwimmingPool"]
         if x =="true":
-            answer = "Yes"
+            answer = True
         else:
-            answer = "No"
+            answer = False
     except:
-        answer = "No"
+        answer = False
     return answer
 
 def get_garden_area(wp_soup):
@@ -51,7 +75,17 @@ def get_garden_area(wp_soup):
     try:
         x = data["classified"]["outdoor"]["garden"]["surface"]
     except:
-        x = 0
+        x = None
+    return x
+
+def get_terrace(wp_soup):
+    data = get_data_layer(wp_soup)
+    try:
+        terrace= data["classified"]["outdoor"]["terrace"]["exists"]
+        x =True
+
+    except:
+        x = False 
     return x
 
 def get_surface_of_land(wp_soup):
@@ -59,7 +93,7 @@ def get_surface_of_land(wp_soup):
     try:
         x = data["classified"]["land"]["surface"]
     except:
-        x = 0
+        x = None
     return x
 
 def get_data_layer(wp_soup):
@@ -78,7 +112,11 @@ def get_classified_data_layer(wp_soup):
 
 def get_living_area(wp_soup):
     data = get_classified_data_layer(wp_soup)
-    return data["property"]["netHabitableSurface"]
+    try:
+        x=data["property"]["netHabitableSurface"]
+    except:
+        x= None
+    return x
 
 async def get_soup(url, session=None):
     if session:
@@ -102,6 +140,8 @@ async def url_dictionary(url, session):
     url_dic["Swimming_pool"] = get_swimming_pool(soup)
     url_dic["Garden_area"] = get_garden_area(soup)
     url_dic["Surface_of_land"] = get_surface_of_land(soup)
+    url_dic["Terrace"] = get_terrace(soup)
+    url_dic["Kitchen"] = get_kitchen(soup)
     return url_dic
 
 async def get_data_per_page(page_number, session=None):
@@ -150,4 +190,5 @@ async def create_csv():
     main_df.to_csv("final-csv.csv", index=False)
 
     return main_df
+
 
