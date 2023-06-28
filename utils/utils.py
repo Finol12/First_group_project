@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import requests as r
 import re
 import json
+import asyncio
+from httpx import AsyncClient
 #import lxml
 #import cchardet
 
@@ -77,17 +79,26 @@ def get_living_area(wp_soup):
     data = get_classified_data_layer(wp_soup)
     return data["property"]["netHabitableSurface"]
 
-def get_soup(url, session=None):
+async def get_soup(url, session=None):
+#async
     if session:
-        page = session.get(url)
+        page = await session.get(url)
     else:
-        page = r.get(url)
+        page = await r.get(url)
+#end async
+    #if session:
+    #    page = await session.get(url)
+    #else:
+    #    page = await r.get(url)
 #    soup = BeautifulSoup(page.content, "lxml")
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
 
-def url_dictionary(url, session):
-    soup = get_soup(url, session)
+async def url_dictionary(url, session):
+#async
+    soup = await get_soup(url, session)
+#end async
+    #soup = get_soup(url, session)
     url_dic = {}
     url_dic["URL"] = url
     url_dic["Type"] = get_type_of_property(soup)
@@ -101,7 +112,7 @@ def url_dictionary(url, session):
     url_dic["Surface_of_land"] = get_surface_of_land(soup)
     return url_dic
 
-def get_data_per_page(page_number, session=None):
+async def get_data_per_page(page_number, session=None):
     """Receives a 'page_number', then returns a dictionary containing
     data from each immoweb real estate advertisement on that page"""
     url = ("https://www.immoweb.be/en/search/house/for-sale?countries=BE&page="
@@ -109,13 +120,27 @@ def get_data_per_page(page_number, session=None):
     must_close = False
     if not session:
         must_close = True
-        session = r.Session()
-    soup = get_soup(url, session)
+#async
+        session = AsyncClient()
+#end async
+        #session = r.Session()
+    soup = await get_soup(url, session)
     results = []
+    tasks = []
     links = soup.find_all("a", attrs={'class' : 'card__title-link'})
     for link in links:
         if "immoweb" in link["href"]:
-            results.append(url_dictionary(link["href"], session))
+#async
+            tasks.append(
+                asyncio.create_task(url_dictionary(link["href"], session)))
+#End async
+            #results.append(url_dictionary(link["href"], session))
+#async
+    results = await asyncio.gather(*tasks)
+#End async
     if must_close:
-        session.close()
+#async
+        await session.aclose()
+#end async
+        #session.close()
     return results
