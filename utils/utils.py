@@ -22,7 +22,7 @@ def get_subtype_of_propert(wp_soup):
     try:
         x=data["classified"]["subtype"]
     except:
-        x="None"
+        x=None
     return x
 
 def get_type_of_property(wp_soup):
@@ -30,7 +30,7 @@ def get_type_of_property(wp_soup):
     try:
         x=data["classified"]["type"]
     except:
-        x="None"
+        x=None
     return x
 
 def get_price(wp_soup):
@@ -38,7 +38,7 @@ def get_price(wp_soup):
     try:
         x=data["classified"]["price"]
     except:
-        x="None"
+        x=None
     return x
 
 def get_num_of_bedrooms(wp_soup):
@@ -46,7 +46,7 @@ def get_num_of_bedrooms(wp_soup):
     try:
         x=data["classified"]["bedroom"]["count"]
     except:
-        x="None"
+        x=None
     return x
 
 def get_swimming_pool(wp_soup):
@@ -54,11 +54,11 @@ def get_swimming_pool(wp_soup):
     try:
         x = data["classified"]["wellnessEquipment"]["hasSwimmingPool"]
         if x =="true":
-            answer = "Yes"
+            answer = True
         else:
-            answer = "No"
+            answer = False
     except:
-        answer = "No"
+        answer = False
     return answer
 
 def get_garden_area(wp_soup):
@@ -66,17 +66,17 @@ def get_garden_area(wp_soup):
     try:
         x = data["classified"]["outdoor"]["garden"]["surface"]
     except:
-        x = 0
+        x = None
     return x
 
 def get_terrace(wp_soup):
     data = get_data_layer(wp_soup)
     try:
         terrace= data["classified"]["outdoor"]["terrace"]["exists"]
-        x ="Yes"
+        x =True
 
     except:
-        x = "No" 
+        x = False 
     return x
 
 def get_surface_of_land(wp_soup):
@@ -84,7 +84,7 @@ def get_surface_of_land(wp_soup):
     try:
         x = data["classified"]["land"]["surface"]
     except:
-        x = 0
+        x = None
     return x
 
 def get_data_layer(wp_soup):
@@ -103,7 +103,11 @@ def get_classified_data_layer(wp_soup):
 
 def get_living_area(wp_soup):
     data = get_classified_data_layer(wp_soup)
-    return data["property"]["netHabitableSurface"]
+    try:
+        x=data["property"]["netHabitableSurface"]
+    except:
+        x= None
+    return x
 
 async def get_soup(url, session=None):
     if session:
