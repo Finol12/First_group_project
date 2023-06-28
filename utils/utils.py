@@ -114,7 +114,7 @@ def get_data_per_page(page_number, session=None):
     results = []
     links = soup.find_all("a", attrs={'class' : 'card__title-link'})
     for link in links:
-        if "immoweb" in link["href"]:
+        if "immoweb.be/en/classified" in link["href"]:
             results.append(url_dictionary(link["href"], session))
     if must_close:
         session.close()
