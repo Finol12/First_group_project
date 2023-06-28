@@ -4,6 +4,7 @@ import re
 import json
 import asyncio
 from httpx import AsyncClient
+import pandas as pd
 #import lxml
 #import cchardet
 
@@ -124,3 +125,29 @@ async def get_data_per_page(page_number, session=None):
     if must_close:
         await session.aclose()
     return results
+
+async def consolidate_data():
+    consolidated_results = []
+    tasks = []
+    async with AsyncClient() as session:  
+        for x in range(1, 6):
+            tasks.append(
+                asyncio.create_task(get_data_per_page(x, session)))
+        results = await asyncio.gather(*tasks)
+    for result in results:
+        consolidated_results.extend(result)
+    return consolidated_results
+
+async def create_dataframe():
+    treasure_chest = await consolidate_data()
+    if not treasure_chest:
+        return pd.DataFrame()
+    main_df = pd.DataFrame.from_records(treasure_chest)
+    return main_df
+
+async def create_csv():
+    main_df = await create_dataframe()
+    main_df.to_csv("final-csv.csv", index=False)
+
+    return main_df
+
