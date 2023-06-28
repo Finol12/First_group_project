@@ -83,7 +83,7 @@ async def get_soup(url, session=None):
     if session:
         page = await session.get(url)
     else:
-        page = await r.get(url)
+        page = r.get(url)
 #    soup = BeautifulSoup(page.content, "lxml")
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
@@ -117,7 +117,7 @@ async def get_data_per_page(page_number, session=None):
     tasks = []
     links = soup.find_all("a", attrs={'class' : 'card__title-link'})
     for link in links:
-        if "immoweb" in link["href"]:
+        if "immoweb.be/en/classified" in link["href"]:
             tasks.append(
                 asyncio.create_task(url_dictionary(link["href"], session)))
     results = await asyncio.gather(*tasks)
