@@ -5,13 +5,16 @@ import json
 import asyncio
 from httpx import AsyncClient
 import pandas as pd
-import lxml
-import cchardet
+#import lxml
+#import cchardet
 
 succesful_pages = 0
-number_of_pages = 200
+number_of_pages = 332
 errors = 0
 log = "\n"
+go_up = '\033[1A'
+clean_line = '\x1b[2K'
+print("\n")
 
 def get_locality(wp_soup):
     """Function receives a soup object from a immoweb listing and
@@ -130,12 +133,14 @@ async def get_soup(url, session=None):
         page = await session.get(url)
     else:
         page = r.get(url)
-    soup = BeautifulSoup(page.content, "lxml")
-#    soup = BeautifulSoup(page.content, "html.parser")
+    #soup = BeautifulSoup(page.content, "lxml")
+    soup = BeautifulSoup(page.content, "html.parser")
     return soup
 
 async def url_dictionary(url, session):
     global errors
+    global succesful_pages
+    global log
     url_dic = {}
     try:
         soup = await get_soup(url, session)
@@ -151,20 +156,22 @@ async def url_dictionary(url, session):
         url_dic["Surface_of_land"] = get_surface_of_land(soup)
         url_dic["Terrace"] = get_terrace(soup)
         url_dic["Kitchen"] = get_kitchen(soup)
+        succesful_pages+=1
+        progress()
         return url_dic
     except Exception as e:
-        print("\nError on single page: ",e, end=
-             "\033[1A\r")
+        print(go_up,end=clean_line)
+        print("Error on single page: ",e)
         errors += 1
+        log += e.__str__() + "\n"
+        progress()
         raise e
 
-def progress(task):
-    global succesful_pages
-    succesful_pages+=1
-    print(" Succesfull pages: ", succesful_pages,
-          f"({round(succesful_pages/(number_of_pages*0.3),1)}%)",
-          " errors: ", errors,f" ({round(errors/succesful_pages,3)}%)",
-          end="                                                        \r")
+def progress():
+    print(go_up*2,end=clean_line)
+    print("Succesfull pages: ", succesful_pages,
+      f"({round(succesful_pages/(number_of_pages*0.3),1)}%)",
+      " errors: ", errors,f" ({round(errors/succesful_pages,3)}%)", end="\n\n")
 
 async def get_data_per_page(page_number, session=None):
     """Receives a 'page_number', then returns a dictionary containing
@@ -185,52 +192,41 @@ async def get_data_per_page(page_number, session=None):
                 and link.parent.name != "h2"):
                 tasks.append(
                     asyncio.create_task(url_dictionary(link["href"], session)))
-        for task in tasks:
-            task.add_done_callback(progress)
-        try:
-            results = await asyncio.gather(*tasks)
-        except Exception as e:
-            raise e
-        #for index, result in enumerate(results):
-        #    if isinstance(result, Exception):
-        #        print("\n\n Deleting error after page is done \033[1A\033[1A\r ")
-        #        results.pop(index)
+        results = await asyncio.gather(*tasks,return_exceptions=True)
+        for index, result in enumerate(results):
+            if isinstance(result, Exception):
+                results.remove(result)
     else:
-        print("\n Error on page, could not get links \033[1A")
+        print(go_up,end=clean_line)
+        print("Error on page, could not get links")
         results = []
     if must_close:
         await session.aclose()
     return results
 
 async def consolidate_data():
+    global log
     consolidated_results = []
     tasks = []
     async with AsyncClient(timeout=None) as session:
         for x in range(1, number_of_pages+1):
             tasks.append(
                 asyncio.create_task(get_data_per_page(x, session)))
-        try:
-            results = await asyncio.gather(*tasks)
-        except Exception as e:
-            log +=e + "\n"
+        results = await asyncio.gather(*tasks,return_exceptions=True)
         for result in results:
-            consolidated_results.extend(result)
-        #    try:
-        #        result
-        #        consolidated_results.extend(result)
-        #    except Exception as e:
-        #        print("\nError in the page request: ", e)
-        #        print("\n", result)
+            if isinstance(result, Exception):
+                print("Error in the page request: " + result.__str__())
+            else:
+                consolidated_results.extend(result)
     return consolidated_results
 
 def create_dataframe():
     treasure_chest = asyncio.run(consolidate_data())
-    print("Writing log")
     with open("error_logs.log","w") as log_file:
         log_file.write(log)
     if not treasure_chest:
         return pd.DataFrame()
-    print("\nCreating Data Frame...")
+    print("Creating Data Frame...")
     main_df = pd.DataFrame.from_records(treasure_chest)
     print("Done!")
     print(main_df)
