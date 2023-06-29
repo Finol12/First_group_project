@@ -5,8 +5,11 @@ import json
 import asyncio
 from httpx import AsyncClient
 import pandas as pd
-#import lxml
-#import cchardet
+import lxml
+import cchardet
+
+total_listings = 0
+number_of_pages = 200
 
 def get_locality(wp_soup):
     """Function receives a soup object from a immoweb listing and
@@ -47,7 +50,7 @@ def get_kitchen(wp_soup):
     try:
         x= data["classified"]["kitchen"]["type"]
     except:
-        x = None 
+        x = None
     return x
 
 def get_num_of_bedrooms(wp_soup):
@@ -85,7 +88,7 @@ def get_terrace(wp_soup):
         x =True
 
     except:
-        x = False 
+        x = False
     return x
 
 def get_surface_of_land(wp_soup):
@@ -98,6 +101,7 @@ def get_surface_of_land(wp_soup):
 
 def get_data_layer(wp_soup):
     tags = wp_soup.find_all("script")
+    script=['']
     for tag in tags:
         if "window.dataLayer = " in tag.text:
             script=json.loads(tag.text.split("window.dataLayer = ")[1][:-2])
@@ -105,6 +109,7 @@ def get_data_layer(wp_soup):
 
 def get_classified_data_layer(wp_soup):
     tags = wp_soup.find_all("script")
+    script={}
     for tag in tags:
         if "window.classified = " in tag.text:
             script=json.loads(re.search(r"\{.*\}(?:;)", tag.text).group(0)[:-1])
@@ -119,12 +124,15 @@ def get_living_area(wp_soup):
     return x
 
 async def get_soup(url, session=None):
-    if session:
-        page = await session.get(url)
-    else:
-        page = r.get(url)
-#    soup = BeautifulSoup(page.content, "lxml")
-    soup = BeautifulSoup(page.content, "html.parser")
+    try:
+        if session:
+            page = await session.get(url)
+        else:
+            page = r.get(url)
+        soup = BeautifulSoup(page.content, "lxml")
+    #    soup = BeautifulSoup(page.content, "html.parser")
+    except:
+        soup = BeautifulSoup("", "lxml")
     return soup
 
 async def url_dictionary(url, session):
@@ -144,6 +152,13 @@ async def url_dictionary(url, session):
     url_dic["Kitchen"] = get_kitchen(soup)
     return url_dic
 
+def progress(task):
+    global total_listings
+    total_listings+=1
+    print(" Pages scraped: ", total_listings,
+          f"({round(total_listings/((number_of_pages-1)*0.6),2)}%)",
+          end="                      \r")
+
 async def get_data_per_page(page_number, session=None):
     """Receives a 'page_number', then returns a dictionary containing
     data from each immoweb real estate advertisement on that page"""
@@ -161,6 +176,8 @@ async def get_data_per_page(page_number, session=None):
         if "immoweb.be/en/classified" in link["href"]:
             tasks.append(
                 asyncio.create_task(url_dictionary(link["href"], session)))
+    for task in tasks:
+        task.add_done_callback(progress)
     results = await asyncio.gather(*tasks)
     if must_close:
         await session.aclose()
@@ -169,26 +186,25 @@ async def get_data_per_page(page_number, session=None):
 async def consolidate_data():
     consolidated_results = []
     tasks = []
-    async with AsyncClient() as session:  
-        for x in range(1, 6):
+    async with AsyncClient(timeout=None) as session:
+        for x in range(1, number_of_pages):
             tasks.append(
                 asyncio.create_task(get_data_per_page(x, session)))
         results = await asyncio.gather(*tasks)
-    for result in results:
-        consolidated_results.extend(result)
+        for result in results:
+            consolidated_results.extend(result)
     return consolidated_results
 
-async def create_dataframe():
-    treasure_chest = await consolidate_data()
+def create_dataframe():
+    treasure_chest = asyncio.run(consolidate_data())
     if not treasure_chest:
         return pd.DataFrame()
     main_df = pd.DataFrame.from_records(treasure_chest)
+    print("")
+    print(main_df)
     return main_df
 
-async def create_csv():
-    main_df = await create_dataframe()
+def create_csv():
+    main_df = create_dataframe()
     main_df.to_csv("final-csv.csv", index=False)
-
     return main_df
-
-

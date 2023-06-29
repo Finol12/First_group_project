@@ -3,3 +3,4 @@ utils/test.py
 *.swp
 myenv/
 *.log
+*.csv
