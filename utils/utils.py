@@ -17,7 +17,7 @@ clean_line = '\x1b[2K'
 print("\n")
 
 def get_locality(wp_soup):
-    """Function receives a soup object from a immoweb listing and
+    """Receives a soup object from a immoweb listing and
     return the zip code of the listing"""
     data = get_data_layer(wp_soup)
     try:
@@ -27,6 +27,8 @@ def get_locality(wp_soup):
     return result
 
 def get_subtype_of_propert(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    return the subtype of the listing"""
     data = get_data_layer(wp_soup)
     try:
         x=data["classified"]["subtype"]
@@ -35,6 +37,8 @@ def get_subtype_of_propert(wp_soup):
     return x
 
 def get_type_of_property(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    return the type of the listing"""
     data = get_data_layer(wp_soup)
     try:
         x=data["classified"]["type"]
@@ -43,6 +47,8 @@ def get_type_of_property(wp_soup):
     return x
 
 def get_price(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    return the listing price"""
     data = get_data_layer(wp_soup)
     try:
         x=data["classified"]["price"]
@@ -51,6 +57,8 @@ def get_price(wp_soup):
     return x
 
 def get_kitchen(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    return the type of kitchen it has"""
     data = get_data_layer(wp_soup)
     try:
         x= data["classified"]["kitchen"]["type"]
@@ -59,6 +67,8 @@ def get_kitchen(wp_soup):
     return x
 
 def get_num_of_bedrooms(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    return the number of bedrooms it has"""
     data = get_data_layer(wp_soup)
     try:
         x=data["classified"]["bedroom"]["count"]
@@ -67,6 +77,8 @@ def get_num_of_bedrooms(wp_soup):
     return x
 
 def get_swimming_pool(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns whether the listing has a swimming pool"""
     data = get_data_layer(wp_soup)
     try:
         x = data["classified"]["wellnessEquipment"]["hasSwimmingPool"]
@@ -79,6 +91,8 @@ def get_swimming_pool(wp_soup):
     return answer
 
 def get_garden(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns whether the listing has a garden"""
     data = get_classified_data_layer(wp_soup)
     try:
         x=data["property"]["hasGarden"]
@@ -87,6 +101,9 @@ def get_garden(wp_soup):
     return x
 
 def get_garden_area(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns the surface of the garden. Returns None if it has
+    no garden"""
     data = get_data_layer(wp_soup)
     try:
         x = data["classified"]["outdoor"]["garden"]["surface"]
@@ -95,16 +112,19 @@ def get_garden_area(wp_soup):
     return x
 
 def get_terrace(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns whether the listing has a terrace"""
     data = get_data_layer(wp_soup)
     try:
         terrace= data["classified"]["outdoor"]["terrace"]["exists"]
         x =True
-
     except:
         x = False
     return x
 
 def get_surface_of_land(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns the surface of the land"""
     data = get_data_layer(wp_soup)
     try:
         x = data["classified"]["land"]["surface"]
@@ -113,6 +133,9 @@ def get_surface_of_land(wp_soup):
     return x
 
 def get_data_layer(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns a dictionary containing data from the javascript
+    windows.data_layer object"""
     tags = wp_soup.find_all("script")
     script=['']
     for tag in tags:
@@ -121,6 +144,9 @@ def get_data_layer(wp_soup):
     return script[0]
 
 def get_classified_data_layer(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns a dictionary containing data from the javascript
+    windows.data_classified_layer object"""
     tags = wp_soup.find_all("script")
     script={}
     for tag in tags:
@@ -129,6 +155,8 @@ def get_classified_data_layer(wp_soup):
     return script
 
 def get_living_area(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns the living area of the listing"""
     data = get_classified_data_layer(wp_soup)
     try:
         x=data["property"]["netHabitableSurface"]
@@ -137,6 +165,8 @@ def get_living_area(wp_soup):
     return x
 
 def get_open_fire(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns whether the listing contains a fire place"""
     data = get_classified_data_layer(wp_soup)
     try:
         x=data["property"]["fireplaceExists"]
@@ -145,6 +175,8 @@ def get_open_fire(wp_soup):
     return x
 
 def get_furnished(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns whether the listing is furnished"""
     data = get_classified_data_layer(wp_soup)
     try:
         x=data["transaction"]["sale"]["isFurnished"]
@@ -154,6 +186,8 @@ def get_furnished(wp_soup):
 
 
 def get_facade_count(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns the number of facades"""
     data = get_classified_data_layer(wp_soup)
     try:
         x=data["property"]["building"]["facadeCount"]
@@ -162,14 +196,19 @@ def get_facade_count(wp_soup):
     return x
 
 def get_state_of_the_building(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns the condition of the building"""
     data = get_classified_data_layer(wp_soup)
     try:
         x=data["property"]["building"]["condition"]
     except:
         x= None
-    return x    
+    return x
 
 async def get_soup(url, session=None):
+    """Receives a url and returns a beautifulsoup object from that
+    url. If session is passed uses that session otherwise uses a
+    default requests session"""
     if session:
         page = await session.get(url)
     else:
@@ -178,6 +217,10 @@ async def get_soup(url, session=None):
     return soup
 
 async def url_dictionary(url, session):
+    """For a given immoweb url, returns a dictionary containing
+    information about that url.Keeps track of succesful and unsuccesful
+    attempts. If an exception occurs when retrieving the data, add to
+    the log and raise it."""
     global errors
     global succesful_pages
     global log
@@ -215,6 +258,7 @@ async def url_dictionary(url, session):
         raise e
 
 def progress():
+    """Prints the current status of the scrape process"""
     print(go_up*2,end=clean_line)
     print("Succesfull pages: ", succesful_pages,
       f"({round(succesful_pages/(2*number_of_pages*0.3),1)}%)",
@@ -222,7 +266,8 @@ def progress():
 
 async def get_data_per_page(url, session=None):
     """Receives a 'url', then returns a list containing
-    data (dicts) from each immoweb real estate listing on that url"""
+    data (dicts) from each immoweb real estate listing on that url.
+    If session is passed uses it, otherwise uses request.Sessions"""
     must_close = False
     if not session:
         must_close = True
