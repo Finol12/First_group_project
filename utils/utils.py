@@ -174,22 +174,6 @@ def progress():
       f"({round(succesful_pages/(number_of_pages*0.3),1)}%)",
       " errors: ", errors,f" ({round(errors/succesful_pages,3)}%)", end="\n\n")
 
-def get_listing_id(wp_soup):
-    data = get_classified_data_layer(wp_soup)
-    try:
-        x= data["id"]
-    except:
-        x= None
-    return x
-
-def get_listing_address(wp_soup):
-    data = get_classified_data_layer(wp_soup)
-    try:
-        x= f"{content['property']['location']['street']} {content['property']['location']['number']}"
-    except:
-        x= None
-    return x
-
 async def get_data_per_page(page_number, session=None):
     """Receives a 'page_number', then returns a dictionary containing
     data from each immoweb real estate advertisement on that page"""
@@ -255,11 +239,22 @@ def create_csv():
     return main_df
 
 
-#url = "https://www.immoweb.be/en/classified/house/for-sale/deerlijk/8540/10669716"
-#soup = asyncio.run(get_soup(url))
-#content = json.dumps(get_classified_data_layer(soup),sort_keys=True, indent=4)
-#content = json.loads(content)
-#print(f"{content['property']['location']['street']} {content['property']['location']['number']}")
+def get_listing_id(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= data["id"]
+    except:
+        x= None
+    return x
+
+def get_listing_address(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= f"{content['property']['location']['street']} {content['property']['location']['number']}"
+    except:
+        x= None
+    return x
+
 
 
 
