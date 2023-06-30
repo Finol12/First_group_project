@@ -10,7 +10,7 @@ This project aims to collect data for the real estate company "ImmoEliza" in ord
 ![Beautiful Soup](https://img.shields.io/badge/beatiful_soup_4-green)
 ![Requests](https://img.shields.io/badge/requests-orange)
 ![httpx](https://img.shields.io/badge/httpx-red)
-![asyncio](https://img.shields.io/badge/asyncio-dark-blue)
+![asyncio](https://img.shields.io/badge/asyncio-darkblue)
 ![pandas](https://img.shields.io/badge/pandas-pink)
 
 To use the code, you need to have the following requirements:
