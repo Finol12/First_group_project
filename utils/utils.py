@@ -70,6 +70,14 @@ def get_swimming_pool(wp_soup):
         answer = False
     return answer
 
+def get_garden(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x=data["property"]["hasGarden"]
+    except:
+        x= False
+    return x
+
 def get_garden_area(wp_soup):
     data = get_data_layer(wp_soup)
     try:
@@ -118,6 +126,39 @@ def get_living_area(wp_soup):
         x= None
     return x
 
+def get_open_fire(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x=data["property"]["fireplaceExists"]
+    except:
+        x= False
+    return x
+
+def get_furnished(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x=data["transaction"]["sale"]["isFurnished"]
+    except:
+        x= False
+    return x
+
+
+def get_facade_count(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x=data["property"]["building"]["facadeCount"]
+    except:
+        x= None
+    return x
+
+def get_state_of_the_building(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x=data["property"]["building"]["condition"]
+    except:
+        x= None
+    return x    
+
 async def get_soup(url, session=None):
     if session:
         page = await session.get(url)
@@ -138,10 +179,15 @@ async def url_dictionary(url, session):
     url_dic["Living_area"] =get_living_area(soup)
     url_dic["Locality"] = get_locality(soup)
     url_dic["Swimming_pool"] = get_swimming_pool(soup)
+    url_dic["Garden"] = get_garden(soup)
     url_dic["Garden_area"] = get_garden_area(soup)
     url_dic["Surface_of_land"] = get_surface_of_land(soup)
     url_dic["Terrace"] = get_terrace(soup)
     url_dic["Kitchen"] = get_kitchen(soup)
+    url_dic["Facade"] = get_facade_count(soup)
+    url_dic["Open Fire"] = get_open_fire(soup)
+    url_dic["Furnished"] = get_furnished(soup)
+    url_dic["State of the building"] = get_state_of_the_building(soup)
     return url_dic
 
 async def get_data_per_page(page_number, session=None):
