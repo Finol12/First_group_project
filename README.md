@@ -4,6 +4,8 @@
 ## Description
 This project aims to collect data for the real estate company "ImmoEliza" in order to create a Machine Learning model for price predictions on real estate sales in Belgium. The goal is to build a dataset with information about at least 10,000 properties from all over Belgium. The dataset will be used as a training set for the prediction model.
 
+![image](assets/image.png)
+
 ## Installation
 
 ![python version](https://img.shields.io/badge/python-3.x-blue)
@@ -13,12 +15,8 @@ This project aims to collect data for the real estate company "ImmoEliza" in ord
 ![asyncio](https://img.shields.io/badge/asyncio-darkblue)
 ![pandas](https://img.shields.io/badge/pandas-pink)
 
-To use the code, you need to have the following requirements:
-- Python 3.x
-- Requests library:(Library for making HTTP requests.`pip install requests`)
-- BeautifulSoup library:(Python library for web scraping and parsing HTML.`pip install beautifulsoup4`)
-- Pandas library:(Library for data manipulation and analysis.`pip install pandas`)
-- HTTPX library:(Async HTTP client for making asynchronous requests.`pip install httpx`)
+To use the code, you need to have the requirements above.
+You can install them manually using `pip install <library name>` or just running `pip install requirements.txt`.
 
 ## Usage
 1. Clone the repository to your local machine.
