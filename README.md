@@ -15,7 +15,7 @@ To use the code, you need to have the following requirements:
 ## Usage
 1. Clone the repository to your local machine.
 2. Install the required dependencies mentioned in the installation section.
-3. Run the `utils.py` file.
+3. Run the `main.py` file.
 4. The program will fetch data from: https://www.immoweb.be/en.
 5. The extracted data will be stored in a CSV file named `final-csv.csv`.
 
