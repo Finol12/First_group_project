@@ -174,7 +174,6 @@ async def get_soup(url, session=None):
         page = await session.get(url)
     else:
         page = r.get(url)
-    #soup = BeautifulSoup(page.content, "lxml")
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
 
@@ -186,11 +185,13 @@ async def url_dictionary(url, session):
     try:
         soup = await get_soup(url, session)
         url_dic["URL"] = url
+        url_dic["Listing_ID"] = get_listing_id(soup)
         url_dic["Type"] = get_type_of_property(soup)
         url_dic["Subtype"] = get_subtype_of_propert(soup)
         url_dic["Price"] = get_price(soup)
         url_dic["Bedroom"] = get_num_of_bedrooms(soup)
         url_dic["Living_area"] =get_living_area(soup)
+        url_dic["Listing_address"] = get_listing_address(soup)
         url_dic["Locality"] = get_locality(soup)
         url_dic["Swimming_pool"] = get_swimming_pool(soup)
         url_dic["Garden"] = get_garden(soup)
@@ -287,3 +288,24 @@ def create_csv():
     main_df = create_dataframe()
     main_df.to_csv("final-csv.csv", index=False)
     return main_df
+
+
+def get_listing_id(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= data["id"]
+    except:
+        x= None
+    return x
+
+def get_listing_address(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= f"{content['property']['location']['street']} {content['property']['location']['number']}"
+    except:
+        x= None
+    return x
+
+
+
+
