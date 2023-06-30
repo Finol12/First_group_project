@@ -9,7 +9,7 @@ import pandas as pd
 #import cchardet
 
 succesful_pages = 0
-number_of_pages = 332
+number_of_pages = 10
 errors = 0
 log = "\n"
 go_up = '\033[1A'
@@ -128,14 +128,30 @@ def get_living_area(wp_soup):
         x= None
     return x
 
+def get_listing_id(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= data["id"]
+    except:
+        x= None
+    return x
+
+def get_listing_address(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= f"{content['property']['location']['street']} {content['property']['location']['number']}"
+    except:
+        x= None
+    return x
+
 async def get_soup(url, session=None):
     if session:
         page = await session.get(url)
     else:
         page = r.get(url)
-    #soup = BeautifulSoup(page.content, "lxml")
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
+
 
 async def url_dictionary(url, session):
     global errors
@@ -145,11 +161,13 @@ async def url_dictionary(url, session):
     try:
         soup = await get_soup(url, session)
         url_dic["URL"] = url
+        url_dic["Listing_ID"] = get_listing_id(soup)
         url_dic["Type"] = get_type_of_property(soup)
         url_dic["Subtype"] = get_subtype_of_propert(soup)
         url_dic["Price"] = get_price(soup)
         url_dic["Bedroom"] = get_num_of_bedrooms(soup)
         url_dic["Living_area"] =get_living_area(soup)
+        url_dic["Listing_address"] = get_listing_address(soup)
         url_dic["Locality"] = get_locality(soup)
         url_dic["Swimming_pool"] = get_swimming_pool(soup)
         url_dic["Garden_area"] = get_garden_area(soup)
@@ -236,3 +254,13 @@ def create_csv():
     main_df = create_dataframe()
     main_df.to_csv("final-csv.csv", index=False)
     return main_df
+
+
+#url = "https://www.immoweb.be/en/classified/house/for-sale/deerlijk/8540/10669716"
+#soup = asyncio.run(get_soup(url))
+#content = json.dumps(get_classified_data_layer(soup),sort_keys=True, indent=4)
+#content = json.loads(content)
+#print(f"{content['property']['location']['street']} {content['property']['location']['number']}")
+
+
+
