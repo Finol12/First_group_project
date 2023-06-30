@@ -16,6 +16,13 @@ go_up = '\033[1A'
 clean_line = '\x1b[2K'
 print("\n")
 
+def progress():
+    """Prints the current status of the scrape process"""
+    print(go_up*2,end=clean_line)
+    print("Succesfull pages: ", succesful_pages,
+      f"({round(succesful_pages/(2*number_of_pages*0.3),1)}%)",
+      " errors: ", errors,f" ({round(errors/succesful_pages,3)}%)", end="\n\n")
+
 def get_locality(wp_soup):
     """Receives a soup object from a immoweb listing and
     return the zip code of the listing"""
@@ -132,27 +139,26 @@ def get_surface_of_land(wp_soup):
         x = None
     return x
 
-def get_data_layer(wp_soup):
+def get_listing_id(wp_soup):
     """Receives a soup object from a immoweb listing and
-    returns a dictionary containing data from the javascript
-    windows.data_layer object"""
-    tags = wp_soup.find_all("script")
-    script=['']
-    for tag in tags:
-        if "window.dataLayer = " in tag.text:
-            script=json.loads(tag.text.split("window.dataLayer = ")[1][:-2])
-    return script[0]
+    returns the immoweb unique id"""
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= data["id"]
+    except:
+        x= None
+    return x
 
-def get_classified_data_layer(wp_soup):
+def get_listing_address(wp_soup):
     """Receives a soup object from a immoweb listing and
-    returns a dictionary containing data from the javascript
-    windows.data_classified_layer object"""
-    tags = wp_soup.find_all("script")
-    script={}
-    for tag in tags:
-        if "window.classified = " in tag.text:
-            script=json.loads(re.search(r"\{.*\}(?:;)", tag.text).group(0)[:-1])
-    return script
+    returns the address of the listing"""
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= f"{content['property']['location']['street']} {content['property']['location']['number']}"
+    except:
+        x= None
+    return x
+
 
 def get_living_area(wp_soup):
     """Receives a soup object from a immoweb listing and
@@ -204,6 +210,28 @@ def get_state_of_the_building(wp_soup):
     except:
         x= None
     return x
+
+def get_data_layer(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns a dictionary containing data from the javascript
+    windows.data_layer object"""
+    tags = wp_soup.find_all("script")
+    script=['']
+    for tag in tags:
+        if "window.dataLayer = " in tag.text:
+            script=json.loads(tag.text.split("window.dataLayer = ")[1][:-2])
+    return script[0]
+
+def get_classified_data_layer(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns a dictionary containing data from the javascript
+    windows.data_classified_layer object"""
+    tags = wp_soup.find_all("script")
+    script={}
+    for tag in tags:
+        if "window.classified = " in tag.text:
+            script=json.loads(re.search(r"\{.*\}(?:;)", tag.text).group(0)[:-1])
+    return script
 
 async def get_soup(url, session=None):
     """Receives a url and returns a beautifulsoup object from that
@@ -257,16 +285,10 @@ async def url_dictionary(url, session):
         progress()
         raise e
 
-def progress():
-    """Prints the current status of the scrape process"""
-    print(go_up*2,end=clean_line)
-    print("Succesfull pages: ", succesful_pages,
-      f"({round(succesful_pages/(2*number_of_pages*0.3),1)}%)",
-      " errors: ", errors,f" ({round(errors/succesful_pages,3)}%)", end="\n\n")
 
 async def get_data_per_page(url, session=None):
-    """Receives a 'url', then returns a list containing
-    data (dicts) from each immoweb real estate listing on that url.
+    """Returns a list containing data (dicts) from each immoweb
+    listings on url.
     If session is passed uses it, otherwise uses request.Sessions"""
     must_close = False
     if not session:
@@ -293,6 +315,10 @@ async def get_data_per_page(url, session=None):
     return results
 
 async def request_links_pages(type_property):
+    """For a given 'type_propety', loop through the pages containing
+    groups of listings (30 per page) asynchronously using asyncio.
+    Returns a list containing the results for each individual link
+    inside each individual page"""
     global log
     tasks = []
     consolidated_results=[]
@@ -313,11 +339,15 @@ async def request_links_pages(type_property):
     return consolidated_results
 
 def consolidate_data():
+    """Returns a list of all property data from both 'house' and
+    'apartment' types."""
     results = asyncio.run(request_links_pages("house"))
     results.extend(asyncio.run(request_links_pages("apartment")))
     return results
 
 def create_dataframe():
+    """Create a DataFrame object from data received from consolidate_data
+    and returns it."""
     treasure_chest = consolidate_data()
     with open("error_logs.log","w") as log_file:
         log_file.write(log)
@@ -330,27 +360,8 @@ def create_dataframe():
     return main_df
 
 def create_csv():
+    """Create a csv from the Dataframe returned by create_dataframe()
+    and writes it to file 'final-csv.csv'"""
     main_df = create_dataframe()
     main_df.to_csv("final-csv.csv", index=False)
     return main_df
-
-
-def get_listing_id(wp_soup):
-    data = get_classified_data_layer(wp_soup)
-    try:
-        x= data["id"]
-    except:
-        x= None
-    return x
-
-def get_listing_address(wp_soup):
-    data = get_classified_data_layer(wp_soup)
-    try:
-        x= f"{content['property']['location']['street']} {content['property']['location']['number']}"
-    except:
-        x= None
-    return x
-
-
-
-
