@@ -8,6 +8,14 @@ import pandas as pd
 #import lxml
 #import cchardet
 
+succesful_pages = 0
+number_of_pages = 332
+errors = 0
+log = "\n"
+go_up = '\033[1A'
+clean_line = '\x1b[2K'
+print("\n")
+
 def get_locality(wp_soup):
     """Function receives a soup object from a immoweb listing and
     return the zip code of the listing"""
@@ -47,7 +55,7 @@ def get_kitchen(wp_soup):
     try:
         x= data["classified"]["kitchen"]["type"]
     except:
-        x = None 
+        x = None
     return x
 
 def get_num_of_bedrooms(wp_soup):
@@ -93,7 +101,7 @@ def get_terrace(wp_soup):
         x =True
 
     except:
-        x = False 
+        x = False
     return x
 
 def get_surface_of_land(wp_soup):
@@ -106,6 +114,7 @@ def get_surface_of_land(wp_soup):
 
 def get_data_layer(wp_soup):
     tags = wp_soup.find_all("script")
+    script=['']
     for tag in tags:
         if "window.dataLayer = " in tag.text:
             script=json.loads(tag.text.split("window.dataLayer = ")[1][:-2])
@@ -113,6 +122,7 @@ def get_data_layer(wp_soup):
 
 def get_classified_data_layer(wp_soup):
     tags = wp_soup.find_all("script")
+    script={}
     for tag in tags:
         if "window.classified = " in tag.text:
             script=json.loads(re.search(r"\{.*\}(?:;)", tag.text).group(0)[:-1])
@@ -164,31 +174,50 @@ async def get_soup(url, session=None):
         page = await session.get(url)
     else:
         page = r.get(url)
-#    soup = BeautifulSoup(page.content, "lxml")
+    #soup = BeautifulSoup(page.content, "lxml")
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
 
 async def url_dictionary(url, session):
-    soup = await get_soup(url, session)
+    global errors
+    global succesful_pages
+    global log
     url_dic = {}
-    url_dic["URL"] = url
-    url_dic["Type"] = get_type_of_property(soup)
-    url_dic["Subtype"] = get_subtype_of_propert(soup)
-    url_dic["Price"] = get_price(soup)
-    url_dic["Bedroom"] = get_num_of_bedrooms(soup)
-    url_dic["Living_area"] =get_living_area(soup)
-    url_dic["Locality"] = get_locality(soup)
-    url_dic["Swimming_pool"] = get_swimming_pool(soup)
-    url_dic["Garden"] = get_garden(soup)
-    url_dic["Garden_area"] = get_garden_area(soup)
-    url_dic["Surface_of_land"] = get_surface_of_land(soup)
-    url_dic["Terrace"] = get_terrace(soup)
-    url_dic["Kitchen"] = get_kitchen(soup)
-    url_dic["Facade"] = get_facade_count(soup)
-    url_dic["Open Fire"] = get_open_fire(soup)
-    url_dic["Furnished"] = get_furnished(soup)
-    url_dic["State of the building"] = get_state_of_the_building(soup)
-    return url_dic
+    try:
+        soup = await get_soup(url, session)
+        url_dic["URL"] = url
+        url_dic["Type"] = get_type_of_property(soup)
+        url_dic["Subtype"] = get_subtype_of_propert(soup)
+        url_dic["Price"] = get_price(soup)
+        url_dic["Bedroom"] = get_num_of_bedrooms(soup)
+        url_dic["Living_area"] =get_living_area(soup)
+        url_dic["Locality"] = get_locality(soup)
+        url_dic["Swimming_pool"] = get_swimming_pool(soup)
+        url_dic["Garden"] = get_garden(soup)
+        url_dic["Garden_area"] = get_garden_area(soup)
+        url_dic["Surface_of_land"] = get_surface_of_land(soup)
+        url_dic["Terrace"] = get_terrace(soup)
+        url_dic["Kitchen"] = get_kitchen(soup)
+        url_dic["Facade"] = get_facade_count(soup)
+        url_dic["Open Fire"] = get_open_fire(soup)
+        url_dic["Furnished"] = get_furnished(soup)
+        url_dic["State of the building"] = get_state_of_the_building(soup)
+        succesful_pages+=1
+        progress()
+        return url_dic
+    except Exception as e:
+        print(go_up,end=clean_line)
+        print("Error on single page: ",e)
+        errors += 1
+        log += e.__str__() + "\n"
+        progress()
+        raise e
+
+def progress():
+    print(go_up*2,end=clean_line)
+    print("Succesfull pages: ", succesful_pages,
+      f"({round(succesful_pages/(number_of_pages*0.3),1)}%)",
+      " errors: ", errors,f" ({round(errors/succesful_pages,3)}%)", end="\n\n")
 
 async def get_data_per_page(page_number, session=None):
     """Receives a 'page_number', then returns a dictionary containing
@@ -200,41 +229,56 @@ async def get_data_per_page(page_number, session=None):
         must_close = True
         session = AsyncClient()
     soup = await get_soup(url, session)
-    results = []
-    tasks = []
-    links = soup.find_all("a", attrs={'class' : 'card__title-link'})
-    for link in links:
-        if "immoweb.be/en/classified" in link["href"]:
-            tasks.append(
-                asyncio.create_task(url_dictionary(link["href"], session)))
-    results = await asyncio.gather(*tasks)
+    if soup:
+        results = []
+        tasks = []
+        links = soup.find_all("a", attrs={'class' : 'card__title-link'})
+        for link in links:
+            if ("immoweb.be/en/classified" in link["href"]
+                and link.parent.name != "h2"):
+                tasks.append(
+                    asyncio.create_task(url_dictionary(link["href"], session)))
+        results = await asyncio.gather(*tasks,return_exceptions=True)
+        for index, result in enumerate(results):
+            if isinstance(result, Exception):
+                results.remove(result)
+    else:
+        print(go_up,end=clean_line)
+        print("Error on page, could not get links")
+        results = []
     if must_close:
         await session.aclose()
     return results
 
 async def consolidate_data():
+    global log
     consolidated_results = []
     tasks = []
-    async with AsyncClient() as session:  
-        for x in range(1, 6):
+    async with AsyncClient(timeout=None) as session:
+        for x in range(1, number_of_pages+1):
             tasks.append(
                 asyncio.create_task(get_data_per_page(x, session)))
-        results = await asyncio.gather(*tasks)
-    for result in results:
-        consolidated_results.extend(result)
+        results = await asyncio.gather(*tasks,return_exceptions=True)
+        for result in results:
+            if isinstance(result, Exception):
+                print("Error in the page request: " + result.__str__())
+            else:
+                consolidated_results.extend(result)
     return consolidated_results
 
-async def create_dataframe():
-    treasure_chest = await consolidate_data()
+def create_dataframe():
+    treasure_chest = asyncio.run(consolidate_data())
+    with open("error_logs.log","w") as log_file:
+        log_file.write(log)
     if not treasure_chest:
         return pd.DataFrame()
+    print("Creating Data Frame...")
     main_df = pd.DataFrame.from_records(treasure_chest)
+    print("Done!")
+    print(main_df)
     return main_df
 
-async def create_csv():
-    main_df = await create_dataframe()
+def create_csv():
+    main_df = create_dataframe()
     main_df.to_csv("final-csv.csv", index=False)
-
     return main_df
-
-
