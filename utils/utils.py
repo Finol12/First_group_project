@@ -9,7 +9,7 @@ import pandas as pd
 #import cchardet
 
 succesful_pages = 0
-number_of_pages = 10
+number_of_pages = 333
 errors = 0
 log = "\n"
 go_up = '\033[1A'
