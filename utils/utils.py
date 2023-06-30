@@ -9,7 +9,7 @@ import pandas as pd
 #import cchardet
 
 succesful_pages = 0
-number_of_pages = 332
+number_of_pages = 333
 errors = 0
 log = "\n"
 go_up = '\033[1A'
@@ -216,14 +216,12 @@ async def url_dictionary(url, session):
 def progress():
     print(go_up*2,end=clean_line)
     print("Succesfull pages: ", succesful_pages,
-      f"({round(succesful_pages/(number_of_pages*0.3),1)}%)",
+      f"({round(succesful_pages/(2*number_of_pages*0.3),1)}%)",
       " errors: ", errors,f" ({round(errors/succesful_pages,3)}%)", end="\n\n")
 
-async def get_data_per_page(page_number, session=None):
-    """Receives a 'page_number', then returns a dictionary containing
-    data from each immoweb real estate advertisement on that page"""
-    url = ("https://www.immoweb.be/en/search/house/for-sale?countries=BE&page="
-           + str(page_number) + "&orderBy=postal_code")
+async def get_data_per_page(url, session=None):
+    """Receives a 'url', then returns a list containing
+    data (dicts) from each immoweb real estate listing on that url"""
     must_close = False
     if not session:
         must_close = True
@@ -239,9 +237,7 @@ async def get_data_per_page(page_number, session=None):
                 tasks.append(
                     asyncio.create_task(url_dictionary(link["href"], session)))
         results = await asyncio.gather(*tasks,return_exceptions=True)
-        for index, result in enumerate(results):
-            if isinstance(result, Exception):
-                results.remove(result)
+        results[:] = [x for x in results if not isinstance(x, Exception)]
     else:
         print(go_up,end=clean_line)
         print("Error on page, could not get links")
@@ -250,14 +246,18 @@ async def get_data_per_page(page_number, session=None):
         await session.aclose()
     return results
 
-async def consolidate_data():
+async def request_links_pages(type_property):
     global log
-    consolidated_results = []
     tasks = []
-    async with AsyncClient(timeout=None) as session:
+    consolidated_results=[]
+    async with AsyncClient(timeout=20) as session:
         for x in range(1, number_of_pages+1):
+            url = ("https://www.immoweb.be/en/search/"
+                   + type_property
+                   + "/for-sale?countries=BE&&isALifeAnnuitySale=false"
+                   + "&page=" + str(x) + "&orderBy=relevance")
             tasks.append(
-                asyncio.create_task(get_data_per_page(x, session)))
+                asyncio.create_task(get_data_per_page(url, session)))
         results = await asyncio.gather(*tasks,return_exceptions=True)
         for result in results:
             if isinstance(result, Exception):
@@ -266,8 +266,13 @@ async def consolidate_data():
                 consolidated_results.extend(result)
     return consolidated_results
 
+def consolidate_data():
+    results = asyncio.run(request_links_pages("house"))
+    results.extend(asyncio.run(request_links_pages("apartment")))
+    return results
+
 def create_dataframe():
-    treasure_chest = asyncio.run(consolidate_data())
+    treasure_chest = consolidate_data()
     with open("error_logs.log","w") as log_file:
         log_file.write(log)
     if not treasure_chest:
