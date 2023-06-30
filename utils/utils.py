@@ -128,22 +128,6 @@ def get_living_area(wp_soup):
         x= None
     return x
 
-def get_listing_id(wp_soup):
-    data = get_classified_data_layer(wp_soup)
-    try:
-        x= data["id"]
-    except:
-        x= None
-    return x
-
-def get_listing_address(wp_soup):
-    data = get_classified_data_layer(wp_soup)
-    try:
-        x= f"{content['property']['location']['street']} {content['property']['location']['number']}"
-    except:
-        x= None
-    return x
-
 async def get_soup(url, session=None):
     if session:
         page = await session.get(url)
@@ -151,7 +135,6 @@ async def get_soup(url, session=None):
         page = r.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     return soup
-
 
 async def url_dictionary(url, session):
     global errors
@@ -190,6 +173,22 @@ def progress():
     print("Succesfull pages: ", succesful_pages,
       f"({round(succesful_pages/(number_of_pages*0.3),1)}%)",
       " errors: ", errors,f" ({round(errors/succesful_pages,3)}%)", end="\n\n")
+
+def get_listing_id(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= data["id"]
+    except:
+        x= None
+    return x
+
+def get_listing_address(wp_soup):
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= f"{content['property']['location']['street']} {content['property']['location']['number']}"
+    except:
+        x= None
+    return x
 
 async def get_data_per_page(page_number, session=None):
     """Receives a 'page_number', then returns a dictionary containing
