@@ -220,6 +220,17 @@ def get_state_of_the_building(wp_soup):
         x= None
     return x
 
+def get_district(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    returns the name of the district in which the listing is located
+    """
+    data = get_classified_data_layer(wp_soup)
+    try:
+        x= data['property']['location']['district']
+    except:
+        x= None
+    return x
+
 def get_data_layer(wp_soup):
     """Receives a soup object from a immoweb listing and
     returns a dictionary containing data from the javascript
@@ -274,6 +285,7 @@ async def url_dictionary(url, session):
         url_dic["Listing_address"] = get_listing_address(soup)
         url_dic["Postal_code"] = get_postalcode(soup)
         url_dic["Locality"] = get_locality(soup)
+        url_dic["District"] = get_district(soup)
         url_dic["Swimming_pool"] = get_swimming_pool(soup)
         url_dic["Garden"] = get_garden(soup)
         url_dic["Garden_area"] = get_garden_area(soup)
