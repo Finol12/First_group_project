@@ -9,7 +9,7 @@ import pandas as pd
 #import cchardet
 
 succesful_pages = 0
-number_of_pages = 333
+number_of_pages = 10
 errors = 0
 log = "\n"
 go_up = '\033[1A'
@@ -25,7 +25,17 @@ def progress():
 
 def get_locality(wp_soup):
     """Receives a soup object from a immoweb listing and
-    return the zip code of the listing"""
+    return the  locality of the listing"""
+    data = get_classified_data_layer(wp_soup)
+    try:
+        result = data["property"]["location"]["locality"]
+    except:
+        result = None
+    return result
+
+def get_postalcode(wp_soup):
+    """Receives a soup object from a immoweb listing and
+    return the postal code of the listing"""
     data = get_data_layer(wp_soup)
     try:
         result = data["classified"]["zip"]
@@ -154,11 +164,10 @@ def get_listing_address(wp_soup):
     returns the address of the listing"""
     data = get_classified_data_layer(wp_soup)
     try:
-        x= f"{content['property']['location']['street']} {content['property']['location']['number']}"
+        x= f"{data['property']['location']['street']} {data['property']['location']['number']}"
     except:
         x= None
     return x
-
 
 def get_living_area(wp_soup):
     """Receives a soup object from a immoweb listing and
@@ -263,6 +272,7 @@ async def url_dictionary(url, session):
         url_dic["Bedroom"] = get_num_of_bedrooms(soup)
         url_dic["Living_area"] =get_living_area(soup)
         url_dic["Listing_address"] = get_listing_address(soup)
+        url_dic["Postal_code"] = get_postalcode(soup)
         url_dic["Locality"] = get_locality(soup)
         url_dic["Swimming_pool"] = get_swimming_pool(soup)
         url_dic["Garden"] = get_garden(soup)
