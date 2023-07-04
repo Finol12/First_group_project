@@ -8,12 +8,12 @@ This project aims to collect data for the real estate company "ImmoEliza" in ord
 
 ## Installation
 
-![python version](https://img.shields.io/badge/python-3.x-blue)
-![Beautiful Soup](https://img.shields.io/badge/beatiful_soup_4-green)
-![Requests](https://img.shields.io/badge/requests-orange)
-![httpx](https://img.shields.io/badge/httpx-red)
-![asyncio](https://img.shields.io/badge/asyncio-darkblue)
-![pandas](https://img.shields.io/badge/pandas-pink)
+[![python version](https://img.shields.io/badge/python-3.x-blue)](https://python.org)
+[![Beautiful Soup](https://img.shields.io/badge/beatiful_soup_4-green)](https://pypi.org/project/beautifulsoup4/)
+[![Requests](https://img.shields.io/badge/requests-orange)](https://pypi.org/project/requests/)
+[![httpx](https://img.shields.io/badge/httpx-red)](https://pypi.org/project/httpx/)
+[![asyncio](https://img.shields.io/badge/asyncio-darkblue)](https://pypi.org/project/asyncio/)
+[![pandas](https://img.shields.io/badge/pandas-pink)](https://pypi.org/project/pandas/)
 
 To use the code, you need to have the requirements above.
 You can install them manually using `pip install <library name>` or just running `pip install -r requirements.txt`.
