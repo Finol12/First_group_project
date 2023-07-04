@@ -16,7 +16,7 @@ This project aims to collect data for the real estate company "ImmoEliza" in ord
 ![pandas](https://img.shields.io/badge/pandas-pink)
 
 To use the code, you need to have the requirements above.
-You can install them manually using `pip install <library name>` or just running `pip install requirements.txt`.
+You can install them manually using `pip install <library name>` or just running `pip install -r requirements.txt`.
 
 ## Usage
 1. Clone the repository to your local machine.
